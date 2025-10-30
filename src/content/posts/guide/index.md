@@ -40,7 +40,7 @@ category: Front-end
 | `author`          | 作者                                                                                                                                                                      |
 | `sourceLink`      | The source link or reference for the post content.                                                                                                                                                          |
 | `draft`           | If this post is still a draft, which won't be displayed.                                                                                                                                                    |
-                                                                                                                                                 |
+
 
 ## Where to Place the Post Files
 

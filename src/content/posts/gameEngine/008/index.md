@@ -322,6 +322,8 @@ Hazel::Application* Hazel::CreateApplication() {
 应用关闭：打印 ExampleLayer::OnDetach - 层已移除
 事件传递：若添加UILayer，点击 UI 时UILayer会拦截事件，ExampleLayer不会收到点击事件。
 
+![025](../assets/025.webp)
+
 ## 2. 关键注意点（避坑）
 内存管理：层通过new创建，但无需手动delete——LayerStack析构时会自动释放所有层。
 迭代器失效：PopLayer后必须更新m_LayerInsert，否则下次PushLayer会崩溃。
