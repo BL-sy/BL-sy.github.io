@@ -42,6 +42,8 @@ This blog template is built with [Astro](https://astro.build/). For the things t
 
 ## [八.层](../008/)
 
+## [八.现代OpenGL(Glad)](../009/)
+
 
 
 ---------------------------------------------------------
