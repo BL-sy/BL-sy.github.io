@@ -125,6 +125,7 @@ project (EngineName)
     location (EngineName)
     kind "SharedLib" -- 配置类型
     language "C++"
+    staticruntime "Off" -- 动态链接运行库
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}") -- 输出目录
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}") -- 中间文件目录
@@ -142,7 +143,6 @@ project (EngineName)
 
     filter "system:windows"
         cppdialect "C++17"
-        staticruntime "On"
         systemversion "latest"
 
         -- 预处理器
@@ -159,20 +159,24 @@ project (EngineName)
 
     filter "configurations:Debug"
         defines "HZ_DEBUG"
+        runtime "Debug" -- 运行库, Debug版本
         symbols "On"
 
     filter "configurations:Release"
         defines "HZ_RELEASE"
+        runtime "Release" -- 运行库, Release版本
         optimize "On"
 
     filter "configurations:Dist"
         defines "HZ_DIST"
+        runtime "Release"
         optimize "On"
 
 project "Sandbox"
     location "Sandbox"
     kind "ConsoleApp"
     language "C++"
+    staticruntime "Off" -- 动态链接运行库
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}") -- 输出目录
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}") -- 中间文件目录
@@ -183,7 +187,9 @@ project "Sandbox"
     }
 
     includedirs {
-        "Hazel/src"
+        "Hazel/src",
+        "Hazel/vendor",
+        "Hazel/vendor/spdlog/include",
     }
 
     links { "Hazel" }
@@ -196,16 +202,48 @@ project "Sandbox"
 
     filter "configurations:Debug"
         defines "HZ_DEBUG"
+        runtime "Debug" -- 运行库, Debug版本
         symbols "On"
 
     filter "configurations:Release"
         defines "HZ_RELEASE"
+        runtime "Release" -- 运行库, Release版本
         optimize "On"
 
     filter "configurations:Dist"
         defines "HZ_DIST"
-        optimize "On" 
+        runtime "Release"
+        optimize "On"
 ```
+
+### 关键配置详解
+
+1. staticruntime：控制 **CRT （C++ 运行库）** 的**链接方式**
+
+   staticruntime 决定了程序是将 CRT “**打包进自身**” 还是 “**依赖外部 DLL**”，核心影响程序的部署和依赖。
+
+- 作用：选择 CRT 的链接模式，仅支持 **On（静态链接）** 和 **Off（动态链接）** 两种值。
+
+- 设为 “Off” 的原因：项目类型是 SharedLib（动态库），动态库若用静态链接 CRT，可能导致主程序（如 Sandbox）与动态库（EngineName）使用不同的 CRT 实例，引发内存管理冲突（比如动态库中分配的内存，主程序中释放会崩溃）。设为 Off（动态链接）可确保主程序和动态库共享同一 CRT DLL，避免此类冲突。
+
+2. runtime：控制 CRT 的**版本类型**
+
+   runtime 决定了程序使用 “**调试版 CRT**” 还是 “**发布版 CRT**”，核心影响程序的调试能力和运行效率。
+
+- 作用：选择 CRT 的功能版本，主要支持 **Debug（调试版）** 和 **Release（发布版）** 两种值。
+
+- 两种版本的区别：
+
+  **runtime "Debug"（调试版 CRT）**：仅用于开发调试，包含调试信息、内存泄漏检测、断言（assert）等调试功能。
+  优点：能捕获内存越界、空指针等错误，辅助定位 bug；
+  缺点：运行效率低，体积大，且依赖的调试版 DLL（如 msvcp140d.dll）不随系统默认安装。
+
+  **runtime "Release"（发布版 CRT）**：用于最终交付，移除了调试信息和调试功能，进行了代码优化。
+  优点：运行速度快，体积小，依赖的发布版 DLL（如 msvcp140.dll）是系统常见组件；
+  缺点：无法使用调试功能，出错时难以定位原因。
+
+- 在 Debug 配置设为 “Debug” 的原因：filter "configurations:Debug" 表示该配置仅对 “Debug 编译模式” 生效。开发调试阶段需要借助调试版 CRT 的断言、内存检测等功能排查 bug，因此必须将 runtime 设为 Debug；
+  若误设为 Release，调试时会丢失关键调试信息，无法有效定位问题。
 
 ## 2.4 编写一键生成脚本（generate.bat）
 
