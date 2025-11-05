@@ -1,5 +1,5 @@
 ---
-title: ImGui 事件处理实现：对接引擎事件系统
+title: 输入检测优化：自定义键值
 published: 2025-11-05
 description: "基于cherno Hazel引擎教学"
 tags: ["学习", "游戏", "引擎"]
