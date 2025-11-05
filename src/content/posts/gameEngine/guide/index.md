@@ -48,6 +48,8 @@ This blog template is built with [Astro](https://astro.build/). For the things t
 
 ## [十一.ImGui层渲染](../011/)
 
+## [十二.输入轮询](../012/)
+
 
 
 ---------------------------------------------------------
