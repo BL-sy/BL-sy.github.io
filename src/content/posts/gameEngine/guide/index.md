@@ -50,6 +50,8 @@ This blog template is built with [Astro](https://astro.build/). For the things t
 
 ## [十二.输入轮询](../012/)
 
+## [十三.输入检测优化：自定义键值](../013/)
+
 
 
 ---------------------------------------------------------
