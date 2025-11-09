@@ -191,12 +191,47 @@ TRACE：灰色；ERROR：红色；FATAL：红色加粗（且会触发程序终�
 
 ![006](../assets/006.webp)
 
-# 六、后续优化方向
+# 六、Git子模块操作与错误处理整理
 
-添加文件日志输出：除控制台外，将日志写入文件（如logs/hazel_core.log），便于后续排查历史问题；
 
-日志级别动态调整：支持通过配置文件或命令行参数，动态修改日志级别（如发布版本仅输出WARN及以上级别）；
+## 1. 核心操作
 
-自定义日志格式：根据需求扩展日志格式（如添加线程 ID、文件路径、行号，便于定位代码位置）；
+- **添加子模块**：
+  手动删除本地目标路径（如 Hazel/vendor/spdlog）
+  命令：git submodule add [仓库URL] [本地路径]
+  空目录补拉代码：git submodule update --init
 
-替换第三方库预留：若后续自研日志系统，只需修改Log类的实现，不影响外部调用（封装的优势）。
+- **更新子模块**：
+  初始化 + 拉取：git submodule sync && git submodule update --init
+  拉最新版：git submodule update --remote
+  批量更新所有：git submodule update --init --recursive
+
+- **删除子模块**：
+  手动删本地子模块目录 + .git/modules/对应配置目录
+  命令：git submodule deinit -f [路径] && git rm -f [路径]
+  编辑 .gitmodules 删对应配置 → git commit
+
+## 2. 高频错误速解（现象 + 命令）
+- “already exists in the index”：git rm --cached [路径] → 重新添加
+
+- “not a git repository: .git/modules/xxx”：手动删上述两目录 → 重新添加
+
+- “repository not found”：验证 URL → 私有库执行 git config --global credential.helper store
+
+- 子模块为空：git submodule update --init
+
+- 切换分支后版本不匹配：git submodule update
+
+- 克隆后无子模块：git submodule update --init --recursive
+
+## 3. 关键命令速记
+
+- 新增：git submodule add [URL] [路径]
+
+- 拉取：git submodule update --init --recursive
+
+- 更最新：git submodule update --remote
+
+- 删除：git submodule deinit -f [路径] && git rm -f [路径]
+
+

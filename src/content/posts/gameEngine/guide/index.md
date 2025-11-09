@@ -15,7 +15,7 @@ This blog template is built with [Astro](https://astro.build/). For the things t
 
 [b站教程地址](https://www.bilibili.com/video/BV1wtLazEEmC?spm_id_from=333.788.videopod.sections&vd_source=eb85f257702408f4a9f49c4f9d9696c0)
 
-[参考1](https://zhuanlan.zhihu.com/c_1276966394941403136)
+[参考1](https://juejin.cn/column/7156527125716025358)
 
 [参考2](https://blog.csdn.net/qq_34060370/category_12203331.html)
 
@@ -54,7 +54,11 @@ This blog template is built with [Astro](https://astro.build/). For the things t
 
 ## [十四、GLM](../014/)
 
-## [十五、ImGui：Docking 与 Viewports 完整实现指南](../015/)
+## [十五、ImGui：Docking 与 Viewports / Hazel编译为静态库](../015/)
+
+## [十六、渲染器架构](../016/)
+
+## [十七、上下文渲染封装与三角形](../017/)
 
 
 

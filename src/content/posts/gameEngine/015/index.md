@@ -272,6 +272,7 @@ project "Hazel"
     cppdialect "C++17"
     staticruntime "on"
 ```
+修改其他所有的premake5文件，保证静态链接，格式规范
 
 # 四、验证与测试：确保特性正常工作
 
