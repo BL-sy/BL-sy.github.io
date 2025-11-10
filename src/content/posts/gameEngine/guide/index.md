@@ -60,6 +60,8 @@ This blog template is built with [Astro](https://astro.build/). For the things t
 
 ## [十七、上下文渲染封装与三角形](../017/)
 
+## [十八、OpenGL着色器](../018/)
+
 
 
 ---------------------------------------------------------
