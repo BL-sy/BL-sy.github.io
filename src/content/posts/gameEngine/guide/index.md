@@ -58,9 +58,11 @@ This blog template is built with [Astro](https://astro.build/). For the things t
 
 ## [十六、渲染器架构](../016/)
 
-## [十七、上下文渲染封装与三角形](../017/)
+## [十七、上下文渲染封装](../017/)
 
-## [十八、OpenGL着色器](../018/)
+## [十八、OpenGL着色器与第一个三角形](../018/)
+
+## [十九、渲染器API抽象](../019/)
 
 
 

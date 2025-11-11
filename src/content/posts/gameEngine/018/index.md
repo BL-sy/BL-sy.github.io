@@ -1,5 +1,5 @@
 ---
-title: OpenGL着色器
+title: OpenGL着色器与第一个三角形
 published: 2025-11-10
 description: "基于cherno Hazel引擎教学"
 tags: ["学习", "游戏", "引擎"]
@@ -13,9 +13,9 @@ This blog template is built with [Astro](https://astro.build/). For the things t
 
 # Hazel 引擎 Shader 封装：OpenGL 着色器类设计与实践
 
-## 一、Shader 核心概念与工作原理
+# 一、Shader 核心概念与工作原理
 
-### 1.1 什么是 OpenGL Shader？
+## 1.1 什么是 OpenGL Shader？
 
 Shader（着色器）是运行在 GPU 上的小型程序，是现代 OpenGL 渲染管线的核心组件，负责处理顶点数据和像素颜色计算。与固定管线不同，可编程管线通过 Shader 完全控制渲染流程，支持自定义光照、纹理、颜色等效果。
 
@@ -25,7 +25,7 @@ Shader（着色器）是运行在 GPU 上的小型程序，是现代 OpenGL 渲�
 
 * **片段着色器（Fragment Shader）**：处理像素（片段）颜色，接收顶点着色器的插值数据，最终输出像素的 RGBA 颜色值。
 
-### 1.2 工作原理：Shader 渲染管线流程
+## 1.2 工作原理：Shader 渲染管线流程
 
 1. **数据输入**：CPU 将顶点数据（如位置）通过 VBO 上传到 GPU，VAO 管理顶点属性布局；
 
@@ -38,9 +38,9 @@ Shader（着色器）是运行在 GPU 上的小型程序，是现代 OpenGL 渲�
 5. **输出合并**：将片段颜色写入颜色缓冲区，最终显示到窗口。
 
 
-## 二、完整 Shader 类实现
+# 二、完整 Shader 类实现
 
-### 2.1 头文件（Hazel/src/Hazel/Renderer/Shader.h）
+## 2.1 头文件（Hazel/src/Hazel/Renderer/Shader.h）
 
 声明 Shader 类的核心接口（构造、析构、绑定、解绑），隐藏 OpenGL 底层细节：
 
@@ -79,7 +79,7 @@ namespace Hazel {
 }
 ```
 
-### 2.2 实现文件（Hazel/src/Hazel/Renderer/Shader.cpp）
+## 2.2 实现文件（Hazel/src/Hazel/Renderer/Shader.cpp）
 
 （基于用户提供代码优化，补充注释与命名规范）
 
@@ -201,10 +201,10 @@ namespace Hazel {
 }
 ```
 
-## 三、Application 集成：使用封装的 Shader 类渲染三角形
+# 三、Application 集成：使用封装的 Shader 类渲染三角形
 
 
-### 修改 Application 构造函数与 Run 函数
+## 修改 Application 构造函数与 Run 函数
 
 使用封装的 Shader 类替换原生 OpenGL Shader 操作，简化渲染流程：
 
@@ -269,9 +269,9 @@ namespace Hazel {
 }
 ```
 
-## 四、着色器源码解析
+# 四、着色器源码解析
 
-### 4.1 顶点着色器（Vertex Shader）
+## 4.1 顶点着色器（Vertex Shader）
 
 
 
@@ -301,7 +301,7 @@ void main() {
 
 * 传递自定义数据（如顶点位置）到片段着色器。
 
-### 4.2 片段着色器（Fragment Shader）
+## 4.2 片段着色器（Fragment Shader）
 
 
 
@@ -331,7 +331,168 @@ void main() {
 
 * 输出颜色值到颜色缓冲区。
 
-## 五、运行效果
+# 五、绘制第一个三角形
+
+## 核心目标
+
+通过 OpenGL 的 VAO（顶点数组对象）、VBO（顶点缓冲对象）、IBO（索引缓冲对象）和基础 Shader，实现三角形渲染，理解现代 OpenGL 渲染管线的核心流程，为后续复杂渲染器的创建提供思路。
+
+要绘制三角形，需串联以下 5 个核心组件，遵循 “状态绑定 + 数据传输 + 着色器驱动” 的渲染逻辑：
+
+
+
+1. **VAO（Vertex Array Object）**：管理顶点属性布局（如位置、颜色），记录 VBO 与顶点属性的关联关系；
+
+2. **VBO（Vertex Buffer Object）**：GPU 显存中的缓冲区，存储顶点数据（如三维坐标）；
+
+3. **IBO（Index Buffer Object）**：存储顶点索引，通过索引复用顶点，减少数据传输开销；
+
+4. **Shader（着色器）**：运行在 GPU 上的程序，分为顶点着色器（处理顶点位置）和片段着色器（处理像素颜色），是渲染的核心驱动；（我们先使用OpenGL自带的渲染管线）
+
+5. **渲染流程**：绑定 VAO→激活 Shader→调用绘制函数→交换缓冲区。
+
+## 代码修改与补充：完整实现三角形渲染
+
+在`Application.cpp`中添加 Shader 编译、链接的工具函数，以及顶点着色器、片段着色器源码（基础功能，仅实现位置传递和固定颜色）：
+
+
+```cpp
+#include "hzpch.h"
+
+#include "Application.h"
+#include "Hazel/Log.h"
+#include <glad/glad.h>  // 依赖OpenGL头文件
+
+namespace Hazel {
+
+    Application* Application::s_Instance = nullptr;
+
+    Application::Application()
+    {
+        HZ_CORE_ASSERT(!s_Instance, "Application already exists!");
+        s_Instance = this;
+
+        // 1. 创建窗口（原有逻辑不变）
+        m_Window = std::unique_ptr<Window>(Window::Create());
+        m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
+
+        // 2. 创建ImGuiLayer（原有逻辑不变）
+        m_ImGuiLayer = new ImGuiLayer();
+        PushOverlay(m_ImGuiLayer);
+
+        m_Shader->Bind(); // 绑定Shader程序（替代glUseProgram）
+        // 3. 渲染初始化：VAO、VBO、IBO（用户原有代码，补充Shader创建）
+        // 3.1 顶点数据（三角形三个顶点的三维坐标）
+        float vertices[3 * 3] = {
+            -0.5f, -0.5f, 0.0f,  // 顶点0：左下
+             0.5f, -0.5f, 0.0f,  // 顶点1：右下
+             0.0f,  0.5f, 0.0f   // 顶点2：上中
+        };
+
+        // 3.2 索引数据（复用顶点，按顺序绘制三角形）
+        unsigned int indices[3] = { 0, 1, 2 };
+
+        // 3.3 创建VAO（管理顶点属性）
+        glGenVertexArrays(1, &m_VertexArray);
+        glBindVertexArray(m_VertexArray);
+
+        // 3.4 创建VBO（存储顶点数据）
+        glGenBuffers(1, &m_VertexBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);  // 静态数据（不频繁修改）
+
+        // 3.5 配置顶点属性（位置属性：索引0，3个float，无归一化，步长3*float，偏移0）
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+
+        // 3.6 创建IBO（存储索引数据）
+        glGenBuffers(1, &m_IndexBuffer);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IndexBuffer);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+        // shader
+    }
+
+    // 主循环（用户原有代码）
+    void Application::Run()
+    {
+        while (m_Running)
+        {
+            // 1. 清屏（原有逻辑不变）
+            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            // 2. 渲染三角形（核心修改：绑定VAO+绘制）
+            glBindVertexArray(m_VertexArray);  // 绑定VAO（自动关联VBO、IBO和顶点属性）
+            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);  // 绘制三角形（3个索引）
+
+            // 3. Layer更新+ImGui渲染（原有逻辑不变）
+            for (Layer* layer : m_LayerStack)
+                layer->OnUpdate();
+
+            if (m_ImGuiLayer)
+            {
+                m_ImGuiLayer->Begin();
+                for (Layer* layer : m_LayerStack)
+                    layer->OnImGuiRender();
+                m_ImGuiLayer->End();
+            }
+
+            // 4. 交换缓冲区（原有逻辑不变）
+            m_Window->OnUpdate();
+        }
+
+        // 程序退出时，释放OpenGL资源（新增）
+        glDeleteVertexArrays(1, &m_VertexArray);
+        glDeleteBuffers(1, &m_VertexBuffer);
+        glDeleteBuffers(1, &m_IndexBuffer);
+    }
+    // 原有事件处理逻辑（OnEvent、OnWindowClose等）不变
+}
+```
+
+## 核心流程解析：三角形渲染的完整链路
+
+### 1. 初始化阶段（Application 构造函数）
+
+
+
+1. **创建 Shader 程序**：
+
+* 编写顶点着色器（传递顶点位置到 GPU）和片段着色器（输出固定橙色）；
+
+* 编译单个着色器，链接为 Shader 程序，存储程序 ID（`m_ShaderProgram`）。
+
+2. **创建 VAO/VBO/IBO**：
+
+* VAO：生成并绑定，后续顶点属性配置会记录到 VAO 中；
+
+* VBO：生成并绑定，将 CPU 端的顶点数据（`vertices`）上传到 GPU 显存；
+
+* 配置顶点属性：告诉 OpenGL 顶点数据的布局（3 个 float 为一个位置，无偏移，步长 3*float）；
+
+* IBO：生成并绑定，上传索引数据（`indices`），指定顶点绘制顺序。
+
+### 2. 渲染阶段（Application::Run 主循环）
+
+
+
+1. **清屏**：清除颜色缓冲区，避免上一帧画面残留；
+
+2. **激活 Shader**：`glUseProgram(m_ShaderProgram)`，后续绘制会使用该 Shader；
+
+3. **绑定 VAO**：`glBindVertexArray(m_VertexArray)`，自动关联 VBO、IBO 和顶点属性配置；
+
+4. **绘制三角形**：`glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr)`，OpenGL 根据索引顺序绘制 3 个顶点组成的三角形；
+
+5. **ImGui 渲染 + 缓冲区交换**：保持原有逻辑，最终将渲染结果显示到窗口。
+
+### 3. 资源释放阶段（Application 析构函数）
+
+释放 VAO、VBO、IBO 和 Shader 程序的 GPU 资源，避免内存泄漏（OpenGL 对象需手动释放）。
+
+
+# 五、运行效果
 
 编译运行后，窗口将显示一个**渐变三角形**：
 
