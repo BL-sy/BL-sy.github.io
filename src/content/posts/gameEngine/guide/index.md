@@ -64,6 +64,8 @@ This blog template is built with [Astro](https://astro.build/). For the things t
 
 ## [十九、渲染器API抽象](../019/)
 
+## [十九、顶点缓冲抽象](../020/)
+
 
 
 ---------------------------------------------------------
